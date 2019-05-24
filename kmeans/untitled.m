@@ -1,0 +1,45 @@
+
+image = imread('../data/citrus_2.jpeg');
+figure; imshow(image); %title('original image'); 
+% image feature
+[hueFeature, satFeature, valueFeature] = HSVfeature(image);
+figure; 
+subplot(1, 3, 1); imshow(hueFeature, []);
+subplot(1, 3, 2); imshow(satFeature, []);
+subplot(1, 3, 3); imshow(valueFeature, []); title('1 Feature maps');
+
+% kmeans clustering
+cluster = 3;
+kmeans_1 = kmeansSeg3(hueFeature, cluster);
+kmeans_2 = kmeansSeg3(satFeature, cluster);
+kmeans_3 = kmeansSeg3(valueFeature, cluster);
+figure; title('2 Feature clusters');
+subplot(1, 3, 1); imshow(kmeans_1, []);
+subplot(1, 3, 2); imshow(kmeans_2, []);
+subplot(1, 3, 3); imshow(kmeans_3, []);
+
+% foreground and background
+l1 = 3;
+l2 = 3;
+l3 = 3;
+mask1 = kmeans_1==l1;
+mask2 = kmeans_2==l2;
+mask3 = kmeans_3==l3;
+figure; title('3 Feature masks');
+subplot(1, 3, 1); imshow(mask1, []);
+subplot(1, 3, 2); imshow(mask2, []);
+subplot(1, 3, 3); imshow(mask3, []);
+
+fmask = (mask1+mask2)==2;
+fback = (mask1+mask3)==0;
+fmask3 = cat(3, fmask, fmask, fmask);
+fback3 = cat(3, fback, fback, fback);
+figure; title('4 candidate foreground'); imshow(image.*uint8(fmask3), []); 
+
+% graphcut
+L = superpixels(image, 25000);
+[SM SN ST] = size(image);
+ROI = ones(SM, SN, 'uint8')>0;
+gc_mask = grabcut(image, L, ROI, fmask, fback);
+
+figure; title('5 graphcut_image'); imshow(image.*uint8(gc_mask), []); 
