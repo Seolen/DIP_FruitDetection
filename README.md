@@ -17,4 +17,4 @@ Final project for Digital Image Processing: fruit segmentation
         6   final foreground after graphcut
 
 # Presentation
-+ Final_Presentation.pptx
++ *.pptx
